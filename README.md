@@ -1,2 +1,2 @@
-# amazon-selling-partner-appstore-scraper
+# Amazon Selling Partner Appstore Scraper
 Scraper for Selling Partner Appstore
