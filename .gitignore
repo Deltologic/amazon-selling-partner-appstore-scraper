@@ -8,8 +8,6 @@
 .vscode*
 
 venv/
-Pipfile
-Pipfile.lock
 
 # databases
 db.*

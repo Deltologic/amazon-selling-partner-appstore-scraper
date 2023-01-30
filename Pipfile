@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+selenium = "4.8.0"
+webdriver-manager = "3.8.5"
+beautifulsoup4 = "*"
+furl = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
