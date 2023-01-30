@@ -13,6 +13,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 from furl import furl
 from typing import List
+from openpyxl import Workbook
+from openpyxl import load_workbook
 
 
 class Automation:
@@ -38,7 +40,7 @@ class Automation:
             "Advertising Optimization",
             "Promotions",
             "Feedback and Reviews",
-            "Buyer - Seller Messaging Service",
+            "Buyer-Seller Messaging Service",
             "Analytics and Reporting",
             "Accounting",
             "Funding and Credit",
@@ -53,12 +55,14 @@ class Automation:
         )
 
     def scrape_apps_from_category(self, category_element: selenium.webdriver.remote.webelement.WebElement):
+        category_name = category_element.text
         category_element.click()
+
         time.sleep(2)
-        apps = self.scrape_apps_from_page()
+        apps = self.scrape_apps_from_page(category_name)
 
         while self.go_on_next_page():
-            new_batch = self.scrape_apps_from_page()
+            new_batch = self.scrape_apps_from_page(category_name)
             print(new_batch)
             apps += new_batch
         return apps
@@ -81,11 +85,11 @@ class Automation:
                 return False
         return False
 
-    def scrape_apps_from_page(self) -> List[dict]:
+    def scrape_apps_from_page(self, category_name: str) -> List[dict]:
         time.sleep(2)
 
         html = self.driver.page_source
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, features="html.parser")
         apps = soup.find_all('div', {'class': 'solution-tile-content-container'})
 
         apps_list = []
@@ -95,7 +99,8 @@ class Automation:
             app_name = app.find('div', {'class': 'solution-tile-name'}).text
             short_description = app.find('span', {'class': 'solution-tile-description-text'}).text
             apps_list.append(
-                {'link_to_app': link_to_app, 'app_name': app_name, 'short_description': short_description}
+                {'link_to_app': f"https://sellercentral.amazon.com{link_to_app}", 'app_name': app_name,
+                 'short_description': short_description, 'category_name': category_name}
             )
 
         return apps_list
@@ -124,18 +129,38 @@ class Automation:
         self.driver.get(self.amazon_appstore_link)
         time.sleep(5)
 
+        filename = "amazon_apps.xlsx"
+
         for category in self.categories_to_scrape:
             elements = self.driver.find_elements(By.CLASS_NAME, "category-list-item")
+            print('----')
             print(category)
-            print(elements)
+
             current_categories = [x for x in elements if x.text != '']
             chosen_category = [x for x in current_categories if x.text == category][0]
-            apps = self.scrape_apps_from_category(chosen_category)
-            print(apps)
+            new_rows = self.scrape_apps_from_category(chosen_category)
+
+            try:
+                wb = load_workbook(filename)
+                ws = wb.worksheets[0]  # select first worksheet
+            except FileNotFoundError:
+                headers_row = ['app_name', 'category_name', 'link_to_app', 'short_description']
+                wb = Workbook()
+                ws = wb.active
+                ws.append(headers_row)
+
+            field_names = ['app_name', 'category_name', 'link_to_app', 'short_description']
+
+            for row in new_rows:
+                values = (row[k] for k in field_names)
+                ws.append(values)
+                wb.save(filename)
             self.driver.get(self.amazon_appstore_link)
             time.sleep(5)
 
 
 if __name__ == '__main__':
+    print("Start")
     x = Automation()
     x.run()
+    print("End")
