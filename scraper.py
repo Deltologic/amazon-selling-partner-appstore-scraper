@@ -25,7 +25,7 @@ class Automation:
         self.chrome_options.add_argument("--proxy-server='direct://'")
         self.chrome_options.add_argument("--proxy-bypass-list=*")
         self.chrome_options.add_argument("--start-maximized")
-        # self.chrome_options.add_argument("--headless")
+        self.chrome_options.add_argument("--headless")
         self.chrome_options.add_argument("--disable-gpu")
         self.chrome_options.add_argument("--disable-dev-shm-usage")
         self.chrome_options.add_argument("--no-sandbox")
